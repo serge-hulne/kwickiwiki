@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"wiki_project/handlers"
+	"kwickiwiki/handlers"
 
 	"github.com/gin-gonic/gin"
 )

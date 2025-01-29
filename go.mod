@@ -1,4 +1,4 @@
-module wiki_project
+module kwickiwiki
 
 go 1.20
 

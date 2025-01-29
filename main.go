@@ -1,33 +1,9 @@
-// package main
-
-// import (
-// 	"wiki_project/models"
-// 	"wiki_project/routes"
-
-// 	"github.com/gin-contrib/sessions"
-// 	"github.com/gin-contrib/sessions/cookie"
-// )
-
-// func main() {
-// 	models.InitDB() // Initialize the database
-
-// 	// Set up session middleware
-// 	store := cookie.NewStore([]byte("your-secret-key"))
-
-// 	router := routes.SetupRouter()
-
-// 	router.Use(sessions.Sessions("session_name", store))
-
-// 	router.Run(":8080")
-// }
-
 package main
 
 import (
+	"kwickiwiki/handlers"
+	"kwickiwiki/models"
 	"log"
-
-	"wiki_project/handlers"
-	"wiki_project/models"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -46,17 +22,21 @@ func main() {
 	r.Use(sessions.Sessions("session_name", store))
 
 	// Define routes and apply middleware
-	r.GET("/", handlers.HomePage)
+	r.GET("/", handlers.ShowPage)
+
 	r.GET("/register", handlers.ShowRegisterPage)
 	r.POST("/register", handlers.RegisterUser)
-	r.GET("/login", handlers.ShowLoginPage)
+
+	r.GET("/login", handlers.LoginUser)
 	r.POST("/login", handlers.LoginUser)
 
 	// Protect these routes with authentication
-	r.GET("/edit/:title", handlers.AuthMiddleware(), handlers.ShowEditPage)
-	r.POST("/edit/:title", handlers.AuthMiddleware(), handlers.SaveEditedPage)
+	r.GET("/edit/:title", handlers.AuthMiddleware(), handlers.EditPage)
+	r.POST("/edit/:title", handlers.AuthMiddleware(), handlers.SavePage)
 
 	// Run the server
 	log.Println("Server running on http://localhost:8080")
 	r.Run(":8080")
 }
+
+// Assuming the home page is just a wiki page

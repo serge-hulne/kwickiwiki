@@ -3,10 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"kwickiwiki/models"
 	"log"
 	"net/http"
 	"strings"
-	"wiki_project/models"
 
 	"github.com/flosch/pongo2"
 	"github.com/gin-contrib/sessions"
@@ -53,7 +53,6 @@ func EditPage(c *gin.Context) {
 		"Title":     page.Title,
 		"Content":   page.Content,
 		"Author":    author,
-		"Category":  category,
 		"Published": published,
 	})
 }
@@ -232,19 +231,6 @@ func SearchPage(c *gin.Context) {
 		"Query":          query,
 		"PageCategories": pageCategories,
 	})
-}
-
-func ShowRegisterPage(c *gin.Context) {
-	tpl := pongo2.Must(pongo2.FromFile("templates/register.html"))
-
-	output, err := tpl.Execute(pongo2.Context{})
-	if err != nil {
-		c.String(500, "Template rendering error")
-		return
-	}
-
-	c.Header("Content-Type", "text/html")
-	c.String(200, output)
 }
 
 func RegisterUser(c *gin.Context) {

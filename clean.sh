@@ -1,1 +1,1 @@
-rm wiki_project db/wiki.db
+rm kwickiwiki db/wiki.db
