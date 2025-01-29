@@ -262,36 +262,45 @@ func RegisterUser(c *gin.Context) {
 }
 
 func LoginUser(c *gin.Context) {
-	// Check if this is a normal browser request or an API call
-	if c.Request.Method == "GET" {
-		renderTemplate(c, "login.html", pongo2.Context{}) // ✅ Serve HTML form
-		return
-	}
-
 	var loginData struct {
 		Email    string `form:"email"`
 		Password string `form:"password"`
 	}
 
 	if err := c.ShouldBind(&loginData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"}) // 🔥 This was causing the issue
+		log.Println("Login failed: Invalid input")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
+	log.Println("Attempting login for:", loginData.Email)
+
 	var user models.User
 	if err := models.DB.Where("email = ?", loginData.Email).First(&user).Error; err != nil {
+		log.Println("Login failed: User not found")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err != nil {
+	log.Println("Stored hashed password:", user.Password)
+	log.Println("Entered password:", loginData.Password)
+
+	// Debug bcrypt password comparison
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password))
+	if err != nil {
+		log.Println("Login failed: Incorrect password")
+		log.Println("Bcrypt error:", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Incorrect password"})
 		return
 	}
 
+	log.Println("Login successful for:", loginData.Email)
+
 	session := sessions.Default(c)
 	session.Set("user_id", user.ID)
 	session.Save()
+
+	log.Println("Session set for user:", user.ID)
 
 	c.Redirect(http.StatusFound, "/")
 }
