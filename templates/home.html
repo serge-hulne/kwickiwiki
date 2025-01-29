@@ -1,6 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
    
+
+
+    {% if user %}
+        <a href="/edit/{{ page.Title }}" class="btn btn-primary">Edit Page</a>
+    {% else %}
+        <a href="/login" class="btn btn-secondary">Log in to edit</a>
+    {% endif %}
+
+
+
     <!-- Display the actual content of the "Home" page -->
     <p>{{ HomeContent|safe }}</p>
 
