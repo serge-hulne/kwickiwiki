@@ -262,13 +262,19 @@ func RegisterUser(c *gin.Context) {
 }
 
 func LoginUser(c *gin.Context) {
-	var loginData struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+	// Check if this is a normal browser request or an API call
+	if c.Request.Method == "GET" {
+		renderTemplate(c, "login.html", pongo2.Context{}) // ✅ Serve HTML form
+		return
 	}
 
-	if err := c.ShouldBindJSON(&loginData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+	var loginData struct {
+		Email    string `form:"email"`
+		Password string `form:"password"`
+	}
+
+	if err := c.ShouldBind(&loginData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"}) // 🔥 This was causing the issue
 		return
 	}
 
@@ -287,23 +293,8 @@ func LoginUser(c *gin.Context) {
 	session.Set("user_id", user.ID)
 	session.Save()
 
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+	c.Redirect(http.StatusFound, "/")
 }
-
-// func AuthMiddleware() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		session := sessions.Default(c)
-// 		userID := session.Get("user_id")
-
-// 		if userID == nil {
-// 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-// 			c.Abort()
-// 			return
-// 		}
-
-// 		c.Next()
-// 	}
-// }
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {

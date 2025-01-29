@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -52,5 +53,40 @@ func InitDB() {
 		} else {
 			log.Println("Home page created successfully!")
 		}
+	}
+}
+
+func CreateDefaultAdmin() {
+	var user User
+	result := DB.Where("email = ?", "admin@example.com").First(&user)
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			log.Println("Creating default admin user...")
+
+			hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
+			admin := User{
+				Name:     "Administrator",
+				Email:    "admin@example.com",
+				Password: string(hashedPassword),
+			}
+
+			if err := DB.Create(&admin).Error; err != nil {
+				log.Fatal("Failed to create admin user:", err)
+			}
+
+			// Assign admin role
+			var adminRole Role
+			if err := DB.Where("name = ?", "admin").First(&adminRole).Error; err != nil {
+				adminRole = Role{Name: "admin"}
+				DB.Create(&adminRole)
+			}
+
+			DB.Create(&UserRole{UserID: admin.ID, RoleID: adminRole.ID})
+
+			log.Println("Default admin user created: Email: admin@example.com, Password: admin123")
+		}
+	} else {
+		log.Println("Admin user already exists.")
 	}
 }

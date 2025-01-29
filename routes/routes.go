@@ -19,6 +19,7 @@ func SetupRouter() *gin.Engine {
 	router.POST("/:title/save", handlers.AuthMiddleware(), handlers.SavePage)
 	router.GET("/search", handlers.SearchPage)
 	router.GET("/register", handlers.ShowRegisterPage)
+	router.POST("/login", handlers.LoginUser)
 
 	return router
 }

@@ -14,6 +14,9 @@ func main() {
 	// Initialize database
 	models.InitDB()
 
+	// Ensure the default admin user exists
+	models.CreateDefaultAdmin() // ✅ Call this function to create the admin user
+
 	// Create a new Gin router
 	r := gin.Default()
 
