@@ -290,13 +290,34 @@ func LoginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 }
 
+// func AuthMiddleware() gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		session := sessions.Default(c)
+// 		userID := session.Get("user_id")
+
+// 		if userID == nil {
+// 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+// 			c.Abort()
+// 			return
+// 		}
+
+// 		c.Next()
+// 	}
+// }
+
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 		userID := session.Get("user_id")
 
 		if userID == nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			if strings.Contains(c.GetHeader("Accept"), "application/json") {
+				// If request expects JSON (like an API call), return a JSON error
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			} else {
+				// If it's a normal browser request, redirect to login page
+				c.Redirect(http.StatusFound, "/login")
+			}
 			c.Abort()
 			return
 		}
