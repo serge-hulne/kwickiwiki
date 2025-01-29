@@ -22,7 +22,7 @@ func main() {
 	r.Use(sessions.Sessions("session_name", store))
 
 	// Define routes and apply middleware
-	r.GET("/", handlers.ShowPage)
+	r.GET("/", handlers.AuthMiddleware(), handlers.ShowPage)
 
 	r.GET("/register", handlers.ShowRegisterPage)
 	r.POST("/register", handlers.RegisterUser)
@@ -38,5 +38,3 @@ func main() {
 	log.Println("Server running on http://localhost:8080")
 	r.Run(":8080")
 }
-
-// Assuming the home page is just a wiki page
