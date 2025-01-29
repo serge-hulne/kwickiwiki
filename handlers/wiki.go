@@ -9,6 +9,7 @@ import (
 	"wiki_project/models"
 
 	"github.com/flosch/pongo2"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/datatypes"
