@@ -46,7 +46,7 @@ func EditPage(c *gin.Context) {
 
 	// Extract metadata from JSON
 	author := extractMetadata(page.Metadata, "Author")
-	category := extractMetadata(page.Metadata, "Category")
+	//category := extractMetadata(page.Metadata, "Category")
 	published := extractMetadata(page.Metadata, "Published")
 
 	renderTemplate(c, "edit.html", pongo2.Context{
