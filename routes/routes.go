@@ -17,7 +17,8 @@ func SetupRouter() *gin.Engine {
 	router.GET("/:title", handlers.ShowPage)
 	router.GET("/:title/edit", handlers.EditPage)
 	router.POST("/:title/save", handlers.SavePage)
-	router.GET("/search", handlers.SearchPage) // ✅ Add search route
+	router.GET("/search", handlers.SearchPage)
+	router.GET("/register", handlers.ShowRegisterPage)
 
 	return router
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -230,4 +231,106 @@ func SearchPage(c *gin.Context) {
 		"Query":          query,
 		"PageCategories": pageCategories,
 	})
+}
+
+func ShowRegisterPage(c *gin.Context) {
+	tpl := pongo2.Must(pongo2.FromFile("templates/register.html"))
+
+	output, err := tpl.Execute(pongo2.Context{})
+	if err != nil {
+		c.String(500, "Template rendering error")
+		return
+	}
+
+	c.Header("Content-Type", "text/html")
+	c.String(200, output)
+}
+
+func RegisterUser(c *gin.Context) {
+	var user models.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	// Hash password before storing
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	user.Password = string(hashedPassword)
+
+	if err := models.DB.Create(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User registration failed"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
+}
+
+func LoginUser(c *gin.Context) {
+	var loginData struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := c.ShouldBindJSON(&loginData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	var user models.User
+	if err := models.DB.Where("email = ?", loginData.Email).First(&user).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Incorrect password"})
+		return
+	}
+
+	session := sessions.Default(c)
+	session.Set("user_id", user.ID)
+	session.Save()
+
+	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+}
+
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session := sessions.Default(c)
+		userID := session.Get("user_id")
+
+		if userID == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func RoleMiddleware(requiredRole string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session := sessions.Default(c)
+		userID := session.Get("user_id")
+
+		if userID == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Abort()
+			return
+		}
+
+		var user models.User
+		models.DB.Preload("Roles").First(&user, userID)
+
+		for _, role := range user.Roles {
+			if role.Name == requiredRole {
+				c.Next()
+				return
+			}
+		}
+
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+		c.Abort()
+	}
 }

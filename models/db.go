@@ -28,7 +28,8 @@ func InitDB() {
 	}
 
 	// Auto-migrate the schema
-	DB.AutoMigrate(&Page{})
+	//DB.AutoMigrate(&Page{})
+	DB.AutoMigrate(&User{}, &Role{}, &UserRole{})
 
 	// Ensure "Home" page exists
 	var homePage Page
