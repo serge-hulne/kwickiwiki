@@ -23,13 +23,18 @@ func InitDB() {
 	// Open the SQLite database
 	var err error
 	DB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+
 	if err != nil {
-		log.Fatalf("Failed to connect database: %v", err)
+		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Auto-migrate the schema
-	//DB.AutoMigrate(&Page{})
-	DB.AutoMigrate(&User{}, &Role{}, &UserRole{})
+	// Run AutoMigrate for all tables
+	err = DB.AutoMigrate(&User{}, &Role{}, &UserRole{}, &Page{})
+	if err != nil {
+		log.Fatal("Migration failed:", err)
+	}
+
+	log.Println("Database migration completed successfully.")
 
 	// Ensure "Home" page exists
 	var homePage Page
