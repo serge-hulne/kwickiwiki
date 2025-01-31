@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <h3>Edit: {{ Title }}</h3>
+    <form 
+        hx-post="/{{ Title }}/save" 
+        hx-target="body"
+        hx-debug="true">
+        
+        <label for="author">Author:</label>
+        <input type="text" name="author" value="{{ Author }}">
+
+        <label for="category">Category:</label>
+        <input type="text" name="category" value="{{ Category }}">
+
+        <label for="published">Published:</label>
+        <input type="checkbox" name="published" {% if Published %}checked{% endif %}>
+
+        <label for="content">Content:</label>
+        <textarea name="content" rows="10">{{ Content }}</textarea>
+
+        <button type="submit" class="button">Save</button>
+    </form>
+{% endblock %}

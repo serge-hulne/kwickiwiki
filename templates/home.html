@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+   
+    <!-- Display the actual content of the "Home" page -->
+    <p>{{ HomeContent|safe }}</p>
+
+    <hr>
+
+    {% if PageCategories %}
+        {% for category, pages in PageCategories %}
+            <h3>{{ category }}</h3>
+            <ul>
+                {% for page in pages %}
+                    <li>
+                        <a href="/{{ page.Title }}">{{ page.Title }}</a>
+                        (Last updated: {{ page.UpdatedAt }})
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    {% else %}
+        <p>No pages found. Create your first article!</p>
+    {% endif %}
+       
+
+{% endblock %}
